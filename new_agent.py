@@ -1,20 +1,23 @@
 import finnhub
 import requests
-from google import genai
 from langchain_google_genai import ChatGoogleGenerativeAI
 import streamlit as st
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+from google import genai 
 
 # finnhub api key
-api_key="*************"
+api_key="**********"
 
 # gemini  api key
-g_api_key="***********"
+g_api_key="**********"
 
 
 hisse=["AMD","NVDA","MU","TSM"]
 for hf in hisse:
     # şuanki fiyat
-    url=f"https://finnhub.io/api/v1/quote?symbol={hf}&token={api_key}"
+    
+    url=f"https://finnhub.io/api/v1/quote?symbol={hf}&token={api_key}" 
     response=requests.get(url)
     data=response.json()
     hisse=data.get('c')
@@ -32,7 +35,7 @@ for hf in hisse:
     pe_ttm          = metrics['metric'].get('peBasicExclExtraTTM')
     pe_norm         = metrics['metric'].get('peNormalizedAnnual')
     pb              = metrics['metric'].get('pbAnnual')
-    ps_ttm          = metrics['metric'].get('psTTM')
+    ps_ttm           = metrics['metric'].get('psTTM')
     ev_ebitda       = metrics['metric'].get('evToEbitdaTTM')
     ev_satis        = metrics['metric'].get('evToSalesTTM')
     p_fcf           = metrics['metric'].get('pfcfShareTTM')
@@ -113,24 +116,58 @@ for hf in hisse:
     """
     
     print(cıktı)
-# gemini
-llm=ChatGoogleGenerativeAI(
-    model="gemini-1.5-flash",
-    # gemini  api key
-    g_api_key="AIzaSyBn2XISk5PC_lCR_BOGm3DHqb_kjvJ9wNU",
-    temperature=0.7, # yaratıcılık oranı
-)
-sor=llm.invoke("MU hissesi ile ilgili son haberler ve hisse hakkındaki biligler RSI 100 50 200 günlük ortalama fiyatları nedir teşekkürler?")
-print(sor.content)
 
-"""  
-score=0
-
-if rsı < 50:
-    score +=1
-elif ma50 
-
-"""
+    # gemini
 
 
-  
+    client=genai.Client(api_key="***********")
+
+    chat=client.chats.create(
+         model="gemini-2.5-flash"
+    )
+
+    promt=f"profesyonel bir finansal analist gibi fırsat  analiz yaparmısın:{cıktı}"
+    
+    responsee=chat.send_message(promt)
+         
+        
+                                      
+    print("cevap:" ,responsee.text)
+
+    # filtreleme değerleme
+    
+    puan=0
+    # değerleme
+    if  ps_ttm   and   pe_ttm < 20:
+        puan +=1
+    if pb and pb <3 :
+        puan +=1 
+    # kaarlılık
+    if roe and roe >15:
+        puan +=1
+    
+    if net_marj and net_marj >10:
+        puan +=1
+    
+    # büyüme
+    if gelir_buyume_yoy and gelir_buyume_yoy >10:
+        puan +=1
+    
+    #risk
+    if beta and beta < 1.3:
+        puan +=1
+    
+    # fırsat mı
+    if hisse and low_52w and  (hisse - low_52w) / low_52w <0.2:
+        puan +=1
+    
+    if puan >=6:
+        print("hisse durumu: strong buy")
+        print(f"puan:{puan}")
+    elif puan >=4:
+      print("hisse durumu: buy")
+      print(f"puan:{puan}")
+    else :
+        print("hisse durumu: hold")
+        print(f"puan:{puan}")
+
